@@ -1,22 +1,22 @@
 import { Address, toNano } from '@ton/core';
-import { TextReader } from '../wrappers/TextReader';
+import { SimpleNftUsual } from '../wrappers/SimpleNftUsual';
 import { NetworkProvider, sleep } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider, args: string[]) {
     const ui = provider.ui();
 
-    const address = Address.parse(args.length > 0 ? args[0] : await ui.input('TextReader address'));
+    const address = Address.parse(args.length > 0 ? args[0] : await ui.input('SimpleNftUsual address'));
 
     if (!(await provider.isContractDeployed(address))) {
         ui.write(`Error: Contract at address ${address} is not deployed!`);
         return;
     }
 
-    const textReader = provider.open(TextReader.fromAddress(address));
+    const simpleNftUsual = provider.open(SimpleNftUsual.fromAddress(address));
 
-    const counterBefore = await textReader.getCounter();
+    const counterBefore = await simpleNftUsual.getCounter();
 
-    await textReader.send(
+    await simpleNftUsual.send(
         provider.sender(),
         {
             value: toNano('0.05'),
@@ -30,12 +30,12 @@ export async function run(provider: NetworkProvider, args: string[]) {
 
     ui.write('Waiting for counter to increase...');
 
-    let counterAfter = await textReader.getCounter();
+    let counterAfter = await simpleNftUsual.getCounter();
     let attempt = 1;
     while (counterAfter === counterBefore) {
         ui.setActionPrompt(`Attempt ${attempt}`);
         await sleep(2000);
-        counterAfter = await textReader.getCounter();
+        counterAfter = await simpleNftUsual.getCounter();
         attempt++;
     }
 

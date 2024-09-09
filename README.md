@@ -1,4 +1,4 @@
-# Snft
+# simpleNftUsual
 
 ## Project structure
 
