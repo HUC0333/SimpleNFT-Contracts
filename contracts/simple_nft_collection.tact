@@ -2,36 +2,53 @@ import "@stdlib/deploy";
 import "./message.tact";
 import "./nft_item.tact";
 
-const minTonsForStorage: Int = ton("0.05");
-const gasConsumption: Int = ton("0.05");
-
 contract SimpleNftCollection with Deployable {
+
     next_item_index: Int as uint32 = 0;
     owner_address: Address;
+    master_address: Address;
     royalty_params: RoyaltyParams?;                      
     collection_content: Cell;   
-    individual_content: Cell;
+    individual_content_url: String;
     price: Int;
 
-    init(owner_address: Address, 
+    init(
+    owner_address: Address, 
+    master_address: Address,
     collection_content: Cell, 
-    nft_individual_content: Cell,
+    nft_individual_content_url: String,
     nft_price: Int,
     royalty_params: RoyaltyParams){
         self.owner_address = owner_address;
+        self.master_address = master_address;
         self.collection_content = collection_content; 
         self.royalty_params = royalty_params;
-        self.individual_content = nft_individual_content;
+        self.individual_content_url = nft_individual_content_url;
         self.price = nft_price;
     }
 
     receive("Mint"){
         let ctx: Context = context(); // get sender Info
         let msgValue: Int = ctx.value;
+        require(context().value >= self.price, "NFT creation underpriced");
         let tonBalanceBeforeMsg: Int = myBalance() - msgValue;
         let storageFee: Int = minTonsForStorage - min(tonBalanceBeforeMsg, minTonsForStorage);
         msgValue = msgValue - (storageFee + gasConsumption);
-        self.mint(ctx.sender, msgValue);
+
+        let masterFee = (msgValue * 3) / 100;
+        let collectionOwnerFee = ((msgValue * 97) / 100) - (storageFee + gasConsumption + minTonsForStorage);
+        
+        send(SendParameters{
+            to: self.master_address,
+            value: masterFee
+        });
+
+        send(SendParameters{
+            to: self.owner_address,
+            value: collectionOwnerFee
+        });
+
+        self.mint(ctx.sender, minTonsForStorage);
 
         emit(LogEventMintRecord{ minter: sender(), item_id: self.next_item_index, generate_number: nativeRandom() }.toCell());
     }
@@ -39,7 +56,13 @@ contract SimpleNftCollection with Deployable {
     // ===== Private Methods ===== //
     fun mint(sender: Address, msgValue: Int) {
         require(self.next_item_index >= 0, "non-sequential NFTs");
+        let ctx: Context = context(); // get sender Info
+        // let msgValue: Int = ctx.value;
         let nft_init: StateInit = self.getNftItemInit(self.next_item_index);
+        let contentBuilder: StringBuilder = beginString();
+        let contentUrl: String = self.individual_content_url.asSlice().asString();
+        contentBuilder.append(contentUrl);
+
         send(SendParameters{
                 to: contractAddress(nft_init), 
                 value: msgValue, 
@@ -49,7 +72,7 @@ contract SimpleNftCollection with Deployable {
                     query_id: 0,
                     new_owner: sender,
                     response_destination: self.owner_address,
-                    custom_payload: self.collection_content,
+                    custom_payload: contentBuilder.toCell(),
                     forward_amount: 0,
                     forward_payload: emptySlice()
                 }.toCell(),

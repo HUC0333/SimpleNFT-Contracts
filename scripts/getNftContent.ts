@@ -16,15 +16,24 @@ export async function run(provider: NetworkProvider, args: string[]) {
     const simpleNftCollection = provider.open(SimpleNftCollection.fromAddress(address));
 
     const dataInfo = await simpleNftCollection.getGetCollectionData();
-    let nftAddress = await simpleNftCollection.getGetNftAddressByIndex(2n);
+    let nftAddress = await simpleNftCollection.getGetNftAddressByIndex(1n);
+    console.log("Found address: ", nftAddress);
 
-    await simpleNftCollection.send(
+    /* await simpleNftCollection.send(
         provider.sender(),
         {
             value: toNano('1.5'),
         },
         "Mint"
-    );
+    ); */
+    
+    if (nftAddress) {
+        const simpleNftITem = provider.open(NftItem.fromAddress(nftAddress));
+        const nftData = await simpleNftITem.getGetNftData();
+        console.log("Individual data: ", nftData);
+    } else {
+        console.log("Where is address?");
+    }
 
     let dataInfoAfter = await simpleNftCollection.getGetCollectionData();
     let attempt = 1;

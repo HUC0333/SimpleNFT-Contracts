@@ -5,14 +5,15 @@ import { NetworkProvider } from '@ton/blueprint';
 export async function run(provider: NetworkProvider) {
     const OFFCHAIN_CONTENT_PREFIX = 0x01;
     const string_first = "https://tg.hidrona.com/ton_img/collection.json";
-    const string_item = "https://tg.hidrona.com/ton_img/item.json";
+    const string_content = "https://s.getgems.io/nft/c/66db26464e143f33e592521a/0/meta.json";
     const content = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeStringRefTail(string_first).endCell();
-    const nftContent = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeStringRefTail(string_item).endCell();
     const owner = Address.parse("EQBXOYPdhtLTaY3UJ8Cb69k7-nDFMPrR3S9lhWuk3uscesyQ");
+    const master = Address.parse("UQASOROUZS1xSjdKIZXzoR59-LRqs48Kc6ZXjTYNKAdQzrMu");
     const simpleNftCollection = provider.open(await SimpleNftCollection.fromInit(
         owner,
+        master,
         content,
-        nftContent,
+        string_content,
         toNano("1.5"),
         {
             $$type: "RoyaltyParams",
