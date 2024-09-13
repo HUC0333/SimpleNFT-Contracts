@@ -6,15 +6,23 @@ const minTonsForStorage: Int = ton("0.05");
 const gasConsumption: Int = ton("0.05");
 
 contract SimpleNftCollection with Deployable {
-   next_item_index: Int as uint32 = 0;
+    next_item_index: Int as uint32 = 0;
     owner_address: Address;
     royalty_params: RoyaltyParams?;                      
     collection_content: Cell;   
+    individual_content: Cell;
+    price: Int;
 
-    init(owner_address: Address, collection_content: Cell, royalty_params: RoyaltyParams){
+    init(owner_address: Address, 
+    collection_content: Cell, 
+    nft_individual_content: Cell,
+    nft_price: Int,
+    royalty_params: RoyaltyParams){
         self.owner_address = owner_address;
         self.collection_content = collection_content; 
         self.royalty_params = royalty_params;
+        self.individual_content = nft_individual_content;
+        self.price = nft_price;
     }
 
     receive("Mint"){
