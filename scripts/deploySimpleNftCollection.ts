@@ -15,7 +15,7 @@ export async function run(provider: NetworkProvider) {
         content,
         string_content,
         toNano("1.1"),
-        1000n,
+        0n,
         {
             $$type: "RoyaltyParams",
             numerator: 100n, // 350n = 35%

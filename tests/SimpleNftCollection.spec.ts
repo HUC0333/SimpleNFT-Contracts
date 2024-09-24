@@ -39,7 +39,7 @@ describe('SimpleNftCollection', () => {
             content,
             string_content,
             toNano("0.3"),
-            1000n,
+            0n,
             {
                 $$type: "RoyaltyParams",
                 numerator: 100n, // 350n = 35%
