@@ -1,6 +1,6 @@
 import "@stdlib/deploy";
 import "./message.tact";
-import "./nft_item.tact";
+import "./usual_nft_item.tact";
 
 contract SimpleNftCollection with Deployable {
 
@@ -10,6 +10,7 @@ contract SimpleNftCollection with Deployable {
     royalty_params: RoyaltyParams?;                      
     collection_content: Cell;   
     individual_content_url: String;
+    mint_limit: Int;
     price: Int;
 
     init(
@@ -17,6 +18,7 @@ contract SimpleNftCollection with Deployable {
     master_address: Address,
     collection_content: Cell, 
     nft_individual_content_url: String,
+    mint_limit: Int,
     nft_price: Int,
     royalty_params: RoyaltyParams){
         self.owner_address = owner_address;
@@ -24,19 +26,21 @@ contract SimpleNftCollection with Deployable {
         self.collection_content = collection_content; 
         self.royalty_params = royalty_params;
         self.individual_content_url = nft_individual_content_url;
+        self.mint_limit = mint_limit;
         self.price = nft_price;
     }
 
-    receive("Mint"){
+     /* receive("Mint"){
+        // fix! require(self.mint_limit == 0 || self.next_item_index <= self.mint_limit, "Mint limit reached");
         let ctx: Context = context(); // get sender Info
         let msgValue: Int = ctx.value;
-        require(context().value >= self.price, "NFT creation underpriced");
+        // require(context().value >= self.price, "NFT creation underpriced");
         let tonBalanceBeforeMsg: Int = myBalance() - msgValue;
         let storageFee: Int = minTonsForStorage - min(tonBalanceBeforeMsg, minTonsForStorage);
         msgValue = msgValue - (storageFee + gasConsumption);
 
         let masterFee = (msgValue * 3) / 100;
-        let collectionOwnerFee = ((msgValue * 97) / 100) - (storageFee + gasConsumption + minTonsForStorage);
+        let collectionOwnerFee = ((msgValue * 97) / 100);
         
         send(SendParameters{
             to: self.master_address,
@@ -46,16 +50,50 @@ contract SimpleNftCollection with Deployable {
         send(SendParameters{
             to: self.owner_address,
             value: collectionOwnerFee
-        });
+        }); 
 
         self.mint(ctx.sender, minTonsForStorage);
+
+        emit(LogEventMintRecord{ minter: sender(), item_id: self.next_item_index, generate_number: nativeRandom() }.toCell());
+    } */
+
+    receive("Mint"){
+        let ctx: Context = context(); // get sender Info
+        let msgValue: Int = ctx.value;
+        let tonBalanceBeforeMsg: Int = myBalance() - msgValue;
+        let storageFee: Int = minTonsForStorage - min(tonBalanceBeforeMsg, minTonsForStorage);
+        msgValue = msgValue - (storageFee + gasConsumption);
+        self.mint(ctx.sender, msgValue);
 
         emit(LogEventMintRecord{ minter: sender(), item_id: self.next_item_index, generate_number: nativeRandom() }.toCell());
     }
 
     // ===== Private Methods ===== //
-    fun mint(sender: Address, msgValue: Int) {
+
+        fun mint(sender: Address, msgValue: Int) {
         require(self.next_item_index >= 0, "non-sequential NFTs");
+        let nft_init: StateInit = self.getNftItemInit(self.next_item_index);
+        send(SendParameters{
+                to: contractAddress(nft_init), 
+                value: msgValue, 
+                bounce: false,
+                mode: SendIgnoreErrors,
+                body: Transfer {
+                    query_id: 0,
+                    new_owner: sender,
+                    response_destination: self.owner_address,
+                    custom_payload: self.collection_content,
+                    forward_amount: 0,
+                    forward_payload: emptySlice()
+                }.toCell(),
+                code: nft_init.code,
+                data: nft_init.data
+            });
+        // dump(self.next_item_index); // Reference at: https://tact-by-example.org/03-emit
+        self.next_item_index = self.next_item_index + 1;
+    }
+    /* fun mint(sender: Address, msgValue: Int) {
+        // require(self.next_item_index >= 0, "non-sequential NFTs");
         let ctx: Context = context(); // get sender Info
         // let msgValue: Int = ctx.value;
         let nft_init: StateInit = self.getNftItemInit(self.next_item_index);
@@ -71,8 +109,7 @@ contract SimpleNftCollection with Deployable {
                 body: Transfer {
                     query_id: 0,
                     new_owner: sender,
-                    response_destination: self.owner_address,
-                    custom_payload: contentBuilder.toCell(),
+                    response_destination: sender(),
                     forward_amount: 0,
                     forward_payload: emptySlice()
                 }.toCell(),
@@ -81,7 +118,7 @@ contract SimpleNftCollection with Deployable {
             });
         // dump(self.next_item_index); // Reference at: https://tact-by-example.org/03-emit
         self.next_item_index = self.next_item_index + 1;
-    }
+    } */
 
     receive(msg: GetRoyaltyParams) {   
         let ctx: Context = context(); // get sender Info
@@ -97,6 +134,14 @@ contract SimpleNftCollection with Deployable {
                 destination: self.owner_address
             }.toCell()
         });        
+    }
+
+    get fun get_master_data(): CollectionMasterData {
+        return CollectionMasterData{
+            master: self.master_address,
+            mint_limit: self.mint_limit,
+            price: self.price
+        }
     }
 
     // ------------------ Get Function  ------------------ //
@@ -117,12 +162,15 @@ contract SimpleNftCollection with Deployable {
     }
 
     get fun getNftItemInit(item_index: Int): StateInit {
-        return initOf NftItem(myAddress(), item_index);
+        let b: StringBuilder = beginString();
+        let ic: String = self.individual_content_url.asSlice().asString();
+        b.append(ic);
+        return initOf NftItem(myAddress(), item_index, b.toCell());
     }
     
     get fun get_nft_content(index: Int, individual_content: Cell): Cell { 
         let b: StringBuilder = beginString();
-        let ic: String = individual_content.asSlice().asString();
+        let ic: String = self.individual_content_url.asSlice().asString();
         b.append(ic);
         return b.toCell();
     }

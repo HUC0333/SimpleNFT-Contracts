@@ -56,5 +56,11 @@ struct GetNftData {
     individual_content: Cell;
 }
 
+struct CollectionMasterData {
+    master: Address;
+    mint_limit: Int;
+    price: Int;
+}
+
 const minTonsForStorage: Int = ton("0.03");
 const gasConsumption: Int = ton("0.03");
