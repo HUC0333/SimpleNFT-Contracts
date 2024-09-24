@@ -1,21 +1,18 @@
 import "@stdlib/deploy";
 import "./message.tact";
-
 contract NftItem {
     collection_address: Address;
     item_index: Int; 
     is_initialized: Bool;
 
-    owner: Address;
-    individual_content: Cell;
+    owner: Address?;
+    individual_content: Cell?;
 
-    init(collection_address: Address, item_index: Int, individual_content: Cell){
-        // require(sender() == collection_address, "not from collection");
+    init(collection_address: Address, item_index: Int){
+        require(sender() == collection_address, "not from collection");
         self.collection_address = collection_address;
         self.item_index = item_index;
-        self.individual_content = individual_content;
-        self.is_initialized = false; // Our specific
-        self.owner = sender();
+        self.is_initialized = false;
     }
 
     receive(msg: Transfer){
@@ -23,9 +20,10 @@ contract NftItem {
         let msgValue: Int = self.msgValue(ctx.value);
         
         if (self.is_initialized == false) {  // Initial Transfer, aka the "Minting" of the NFT
-            // require(ctx.sender == self.collection_address, "initialized tx need from collection");
+            require(ctx.sender == self.collection_address, "initialized tx need from collection");
             self.is_initialized = true;
             self.owner = msg.new_owner;
+            self.individual_content = msg.custom_payload;
             send(SendParameters{
                 to: msg.response_destination!!,
                 value: msgValue,
@@ -33,7 +31,7 @@ contract NftItem {
                 body: Excesses { query_id: msg.query_id }.toCell()
             });
         } else {
-            require(ctx.sender == self.owner, "not owner");
+            require(ctx.sender == self.owner!!, "not owner");
             self.owner = msg.new_owner;  // change current owner to the new_owner
             if (msg.forward_amount > 0) {
                 send(SendParameters{
@@ -86,14 +84,14 @@ contract NftItem {
     // --------- Get Function  --------- //
     get fun get_nft_data(): GetNftData {
         let b: StringBuilder = beginString();
-        let collectionData: String = self.individual_content.asSlice().asString();
+        let collectionData: String = (self.individual_content!!).asSlice().asString();
         b.append(collectionData);
 
         return GetNftData {
             is_initialized: self.is_initialized, 
             index: self.item_index, 
             collection_address: self.collection_address, 
-            owner_address: self.owner,
+            owner_address: self.owner!!,
             individual_content: b.toCell()
         };
     }

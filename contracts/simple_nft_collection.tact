@@ -1,6 +1,8 @@
 import "@stdlib/deploy";
 import "./message.tact";
-import "./usual_nft_item.tact";
+import "./nft_item.tact";
+
+const nftBalanceConst: Int = ton("0.1");
 
 contract SimpleNftCollection with Deployable {
 
@@ -30,39 +32,17 @@ contract SimpleNftCollection with Deployable {
         self.price = nft_price;
     }
 
-     /* receive("Mint"){
-        // fix! require(self.mint_limit == 0 || self.next_item_index <= self.mint_limit, "Mint limit reached");
-        let ctx: Context = context(); // get sender Info
-        let msgValue: Int = ctx.value;
-        // require(context().value >= self.price, "NFT creation underpriced");
-        let tonBalanceBeforeMsg: Int = myBalance() - msgValue;
-        let storageFee: Int = minTonsForStorage - min(tonBalanceBeforeMsg, minTonsForStorage);
-        msgValue = msgValue - (storageFee + gasConsumption);
-
-        let masterFee = (msgValue * 3) / 100;
-        let collectionOwnerFee = ((msgValue * 97) / 100);
-        
-        send(SendParameters{
-            to: self.master_address,
-            value: masterFee
-        });
-
-        send(SendParameters{
-            to: self.owner_address,
-            value: collectionOwnerFee
-        }); 
-
-        self.mint(ctx.sender, minTonsForStorage);
-
-        emit(LogEventMintRecord{ minter: sender(), item_id: self.next_item_index, generate_number: nativeRandom() }.toCell());
-    } */
-
     receive("Mint"){
         let ctx: Context = context(); // get sender Info
+        if (self.mint_limit > 0) {
+            require(self.next_item_index <= self.mint_limit, "Mint limit reached");
+        }
+        require(ctx.value >= self.price, "NFT creation underpriced");
         let msgValue: Int = ctx.value;
         let tonBalanceBeforeMsg: Int = myBalance() - msgValue;
         let storageFee: Int = minTonsForStorage - min(tonBalanceBeforeMsg, minTonsForStorage);
         msgValue = msgValue - (storageFee + gasConsumption);
+        
         self.mint(ctx.sender, msgValue);
 
         emit(LogEventMintRecord{ minter: sender(), item_id: self.next_item_index, generate_number: nativeRandom() }.toCell());
@@ -73,9 +53,16 @@ contract SimpleNftCollection with Deployable {
         fun mint(sender: Address, msgValue: Int) {
         require(self.next_item_index >= 0, "non-sequential NFTs");
         let nft_init: StateInit = self.getNftItemInit(self.next_item_index);
+        let feeValue = msgValue - nftBalanceConst;
+        let b: StringBuilder = beginString();
+        let itemData: String = (self.individual_content_url).asSlice().asString();
+        b.append(itemData);
+        b.append("1");
+        b.append(".json");
+
         send(SendParameters{
                 to: contractAddress(nft_init), 
-                value: msgValue, 
+                value: nftBalanceConst, 
                 bounce: false,
                 mode: SendIgnoreErrors,
                 body: Transfer {
@@ -89,36 +76,19 @@ contract SimpleNftCollection with Deployable {
                 code: nft_init.code,
                 data: nft_init.data
             });
-        // dump(self.next_item_index); // Reference at: https://tact-by-example.org/03-emit
-        self.next_item_index = self.next_item_index + 1;
-    }
-    /* fun mint(sender: Address, msgValue: Int) {
-        // require(self.next_item_index >= 0, "non-sequential NFTs");
-        let ctx: Context = context(); // get sender Info
-        // let msgValue: Int = ctx.value;
-        let nft_init: StateInit = self.getNftItemInit(self.next_item_index);
-        let contentBuilder: StringBuilder = beginString();
-        let contentUrl: String = self.individual_content_url.asSlice().asString();
-        contentBuilder.append(contentUrl);
 
         send(SendParameters{
-                to: contractAddress(nft_init), 
-                value: msgValue, 
-                bounce: false,
-                mode: SendIgnoreErrors,
-                body: Transfer {
-                    query_id: 0,
-                    new_owner: sender,
-                    response_destination: sender(),
-                    forward_amount: 0,
-                    forward_payload: emptySlice()
-                }.toCell(),
-                code: nft_init.code,
-                data: nft_init.data
-            });
-        // dump(self.next_item_index); // Reference at: https://tact-by-example.org/03-emit
+            to: self.master_address,
+            value: (feeValue * 3) / 100
+        });
+
+        send(SendParameters{
+            to: self.owner_address,
+            value: (feeValue * 97) / 100
+        }); 
+        dump(self.next_item_index); // Reference at: https://tact-by-example.org/03-emit
         self.next_item_index = self.next_item_index + 1;
-    } */
+    }
 
     receive(msg: GetRoyaltyParams) {   
         let ctx: Context = context(); // get sender Info
@@ -165,12 +135,12 @@ contract SimpleNftCollection with Deployable {
         let b: StringBuilder = beginString();
         let ic: String = self.individual_content_url.asSlice().asString();
         b.append(ic);
-        return initOf NftItem(myAddress(), item_index, b.toCell());
+        return initOf NftItem(myAddress(), item_index);
     }
     
     get fun get_nft_content(index: Int, individual_content: Cell): Cell { 
         let b: StringBuilder = beginString();
-        let ic: String = self.individual_content_url.asSlice().asString();
+        let ic: String = individual_content.asSlice().asString();
         b.append(ic);
         return b.toCell();
     }

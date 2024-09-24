@@ -4,8 +4,8 @@ import { NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {
     const OFFCHAIN_CONTENT_PREFIX = 0x01;
-    const string_first = "https://s.getgems.io/nft/b/c/63efd8c45cbb99c2caf514d7/edit/meta-1680207432341.json";
-    const string_content = "https://ipfs.filebase.io/ipfs/QmbAkLvMcHu7MeYFvnYZPWxEEw62Vpz9WuYMa4qj5zeVpD/meta.json";
+    const string_first = "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/meta.json";
+    const string_content = "1/meta.json";
     const content = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeBuffer(Buffer.from(string_first)).endCell();
     const owner = Address.parse("EQBXOYPdhtLTaY3UJ8Cb69k7-nDFMPrR3S9lhWuk3uscesyQ");
     const master = Address.parse("UQASOROUZS1xSjdKIZXzoR59-LRqs48Kc6ZXjTYNKAdQzrMu");
@@ -14,7 +14,7 @@ export async function run(provider: NetworkProvider) {
         master,
         content,
         string_content,
-        toNano("0.3"),
+        toNano("1.1"),
         1000n,
         {
             $$type: "RoyaltyParams",

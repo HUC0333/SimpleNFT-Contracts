@@ -21,7 +21,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
     await simpleNftCollection.send(
         provider.sender(),
         {
-            value: toNano('0.3'),
+            value: toNano('1.1'),
         },
         "Mint"
     );

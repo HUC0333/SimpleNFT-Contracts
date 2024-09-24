@@ -3,6 +3,21 @@ import { NftCollection } from '../wrappers/UsualNftCollection';
 import { NetworkProvider, sleep } from '@ton/blueprint';
 import { NftItem } from '../wrappers/UsualNftItem';
 
+function hexToString(hex: string): string {
+    // Remove any '0x' prefix if it exists
+    if (hex.startsWith('0x')) {
+        hex = hex.slice(2);
+    }
+
+    // Convert hex to string
+    let str = '';
+    for (let i = 0; i < hex.length; i += 2) {
+        const hexCode = hex.substring(i, i + 2);
+        str += String.fromCharCode(parseInt(hexCode, 16));
+    }
+    return str;
+}
+
 export async function run(provider: NetworkProvider, args: string[]) {
     const ui = provider.ui();
 
@@ -16,7 +31,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
     const simpleNftCollection = provider.open(NftCollection.fromAddress(address));
 
     const dataInfo = await simpleNftCollection.getGetCollectionData();
-    let nftAddress = await simpleNftCollection.getGetNftAddressByIndex(1n);
+    let nftAddress = await simpleNftCollection.getGetNftAddressByIndex(0n);
     console.log("Found address: ", nftAddress);
 
     /* await simpleNftCollection.send(
@@ -31,6 +46,8 @@ export async function run(provider: NetworkProvider, args: string[]) {
         const simpleNftITem = provider.open(NftItem.fromAddress(nftAddress));
         const nftData = await simpleNftITem.getGetNftData();
         console.log("Individual data: ", nftData);
+        console.log("Decrypted nft: ", hexToString(String(nftData.individual_content)));
+        console.log("Decrypted collection: ", hexToString(String(dataInfo.collection_content)));
     } else {
         console.log("Where is address?");
     }
