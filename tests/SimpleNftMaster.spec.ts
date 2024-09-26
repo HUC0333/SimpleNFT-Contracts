@@ -44,7 +44,7 @@ describe('SimpleNftMaster', () => {
         );
 
         const collectionAddress = await simpleNftMaster.getGetCollectionAddressByIndex(0n);
-
+        console.log("Balance on start: ", (await blockchain.getContract(simpleNftMaster.address)).balance);
         const firstCollectionCreate = await simpleNftMaster.send(
             deployer.getSender(),
             {
@@ -53,14 +53,17 @@ describe('SimpleNftMaster', () => {
             {
                 $$type: "CollectionMintParams",
                 queryId: 0n, 
-                owner_address: deployer.getSender().address, 
+                owner_address: owner, 
                 collection_content: content, 
                 nft_individual_content_url: nftContent,
                 royalty_params: myRoyaltyParams,
                 mint_limit: 0n,
-                nft_price: toNano("1.1")
+                nft_price: toNano("1156")
             }
         );
+        
+        console.log("Found collection address: ", collectionAddress);
+
         if (collectionAddress) {
             const collectionContract = blockchain.openContract(SimpleNftCollection.fromAddress(collectionAddress));
 
@@ -70,7 +73,7 @@ describe('SimpleNftMaster', () => {
             await collectionContract.send(
                 deployer.getSender(),
                 {
-                    value: toNano('1.1'),
+                    value: toNano('1156'),
                  },
                  "Mint"
              );
@@ -84,8 +87,28 @@ describe('SimpleNftMaster', () => {
             }
         }
 
-        console.log("Found address: ", collectionAddress);
-         
+        console.log("Trying to withdraw...")
+
+        const startBalance = await deployer.getBalance();
+
+        console.log("Balance before withdraw: ", startBalance);
+        console.log("Contract balance: ", (await blockchain.getContract(simpleNftMaster.address)).balance);
+
+
+        await simpleNftMaster.send(
+            deployer.getSender(),
+            {
+                value: toNano("0.05")
+            },
+            {
+                $$type:"Withdraw",
+                to: deployer.getSender().address
+            }
+        );
+
+        const endBalance = await deployer.getBalance();
+        console.log("Contract balance after: ", (await blockchain.getContract(simpleNftMaster.address)).balance);
+        console.log("Balance after withdraw: ", endBalance, endBalance > startBalance);
         // expect(true)
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,

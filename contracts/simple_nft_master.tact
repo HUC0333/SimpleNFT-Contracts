@@ -60,7 +60,9 @@ contract SimpleNftMaster with Deployable {
         require(sender() == self.owner, "Not from owner");
         send(SendParameters{
             to: msg.to,
-            value: myBalance() - masterMinStorage
+            value: myBalance() - masterMinStorage,
+            bounce: false,
+            mode: SendIgnoreErrors
         });
     }
 
