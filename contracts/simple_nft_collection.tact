@@ -8,39 +8,33 @@ contract SimpleNftCollection with Deployable {
 
     next_item_index: Int as uint32 = 0;
     collection_index: Int as uint32 = 0;
-    owner_address: Address;
+    owner_address: Address?;
     master_address: Address;
     royalty_params: RoyaltyParams?;                      
-    collection_content: Cell;   
-    individual_content_url: String;
-    mint_limit: Int;
-    price: Int;
+    collection_content: Cell?;   
+    individual_content_url: Cell?;
+    mint_limit: Int = 0;
+    price: Int = 0;
     is_setup: Bool;
 
     init(
-    owner_address: Address, 
     master_address: Address,
-    collection_content: Cell, 
-    nft_individual_content_url: String,
-    mint_limit: Int,
-    nft_price: Int,
-    collection_index: Int,
-    royalty_params: RoyaltyParams){
+    collection_index: Int){
         require(sender() == master_address, "Not from master");
-        self.owner_address = owner_address;
-        self.master_address = master_address;
-        self.collection_content = collection_content; 
-        self.royalty_params = royalty_params;
-        self.individual_content_url = nft_individual_content_url;
-        self.mint_limit = mint_limit;
-        self.price = nft_price;
         self.collection_index = collection_index;
+        self.master_address = master_address;
         self.is_setup = false;
     }
 
     receive(msg: CollectionSetupParams) {
         require(sender() == self.master_address, "Not from master");
         require(self.is_setup == false, "Collection settings is already setup");
+        self.price = msg.nft_price;
+        self.mint_limit = msg.mint_limit;
+        self.owner_address = msg.owner_address;
+        self.royalty_params = msg.royalty_params;
+        self.collection_content = msg.collection_content;
+        self.individual_content_url = msg.nft_individual_content_url;
         self.is_setup = true;
     }
 
@@ -67,9 +61,6 @@ contract SimpleNftCollection with Deployable {
         require(self.next_item_index >= 0, "non-sequential NFTs");
         let nft_init: StateInit = self.getNftItemInit(self.next_item_index);
         let feeValue = msgValue - nftBalanceConst;
-        let b: StringBuilder = beginString();
-        let itemData: String = (self.individual_content_url).asSlice().asString();
-        b.append(itemData);
 
         send(SendParameters{
                 to: contractAddress(nft_init), 
@@ -80,7 +71,7 @@ contract SimpleNftCollection with Deployable {
                     query_id: 0,
                     new_owner: sender,
                     response_destination: self.owner_address,
-                    custom_payload: itemData.toCell(),
+                    custom_payload: self.individual_content_url,
                     forward_amount: 0,
                     forward_payload: emptySlice()
                 }.toCell(),
@@ -94,7 +85,7 @@ contract SimpleNftCollection with Deployable {
         });
 
         send(SendParameters{
-            to: self.owner_address,
+            to: self.owner_address!!,
             value: (feeValue * 97) / 100
         }); 
         dump(self.next_item_index); // Reference at: https://tact-by-example.org/03-emit
@@ -112,7 +103,7 @@ contract SimpleNftCollection with Deployable {
                 query_id: msg.query_id,
                 numerator:  (self.royalty_params!!).numerator,
                 denominator: (self.royalty_params!!).denominator,
-                destination: self.owner_address
+                destination: (self.royalty_params!!).destination
             }.toCell()
         });        
     }
@@ -128,12 +119,12 @@ contract SimpleNftCollection with Deployable {
     // ------------------ Get Function  ------------------ //
     get fun get_collection_data(): CollectionData {     
         let b: StringBuilder = beginString();
-        let collectionDataString: String = self.collection_content.asSlice().asString();
+        let collectionDataString: String = (self.collection_content!!).asSlice().asString();
         b.append(collectionDataString);
         return CollectionData{
             next_item_index: self.next_item_index, 
             collection_content: b.toCell(), 
-            owner_address: self.owner_address
+            owner_address: self.owner_address!!
         };
     }
 
@@ -143,9 +134,6 @@ contract SimpleNftCollection with Deployable {
     }
 
     get fun getNftItemInit(item_index: Int): StateInit {
-        let b: StringBuilder = beginString();
-        let ic: String = self.individual_content_url.asSlice().asString();
-        b.append(ic);
         return initOf NftItem(myAddress(), item_index);
     }
     

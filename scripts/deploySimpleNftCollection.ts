@@ -7,6 +7,7 @@ export async function run(provider: NetworkProvider) {
     const string_first = "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/meta.json";
     const string_content = "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/1/meta.json";
     const content = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeBuffer(Buffer.from(string_first)).endCell();
+    const nftContent = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeBuffer(Buffer.from(string_content)).endCell();
     const owner = Address.parse("EQBXOYPdhtLTaY3UJ8Cb69k7-nDFMPrR3S9lhWuk3uscesyQ");
     const master = Address.parse("EQBXOYPdhtLTaY3UJ8Cb69k7-nDFMPrR3S9lhWuk3uscesyQ"); //  Address.parse("UQASOROUZS1xSjdKIZXzoR59-LRqs48Kc6ZXjTYNKAdQzrMu");
     const myRoyaltyParams = {
@@ -16,19 +17,8 @@ export async function run(provider: NetworkProvider) {
         destination: owner,
     }
     const simpleNftCollection = provider.open(await SimpleNftCollection.fromInit(
-        owner,
         master,
-        content,
-        string_content,
-        toNano("1.1"),
-        0n,
-        0n,
-        {
-            $$type: "RoyaltyParams",
-            numerator: 100n, // 350n = 35%
-            denominator: 1000n,
-            destination: owner,
-        }
+        0n
     ));
 
     const send = await simpleNftCollection.send(
@@ -41,8 +31,9 @@ export async function run(provider: NetworkProvider) {
             master_address: master, 
             collection_content: content, 
             royalty_params: myRoyaltyParams,
+            nft_individual_content_url: nftContent,
             mint_limit: 0n,
-            price: toNano("0.3")
+            nft_price: toNano("0.3")
         }
     )
 

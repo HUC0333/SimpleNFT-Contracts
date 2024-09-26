@@ -28,9 +28,10 @@ message CollectionSetupParams {
     owner_address: Address;
     master_address: Address;
     collection_content: Cell; 
+    nft_individual_content_url: Cell;
     royalty_params: RoyaltyParams;
     mint_limit: Int;
-    price: Int;
+    nft_price: Int;
 }
 
 message(0x5fcc3d14) Transfer {
