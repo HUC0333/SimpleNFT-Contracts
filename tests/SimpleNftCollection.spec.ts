@@ -30,8 +30,15 @@ describe('SimpleNftCollection', () => {
         const string_first = "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/meta.json";
         const string_content = "1/meta.json";
         const content = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeBuffer(Buffer.from(string_first)).endCell();
+        deployer = await blockchain.treasury('deployer');
         const owner = Address.parse("EQBXOYPdhtLTaY3UJ8Cb69k7-nDFMPrR3S9lhWuk3uscesyQ");
-        const master = Address.parse("UQASOROUZS1xSjdKIZXzoR59-LRqs48Kc6ZXjTYNKAdQzrMu");
+        const master = deployer.getSender().address; // Address.parse("EQBXOYPdhtLTaY3UJ8Cb69k7-nDFMPrR3S9lhWuk3uscesyQ"); // "UQASOROUZS1xSjdKIZXzoR59-LRqs48Kc6ZXjTYNKAdQzrMu"
+        const myRoyaltyParams = {
+            $$type: "RoyaltyParams" as "RoyaltyParams",
+            numerator: 100n, // 350n = 35%
+            denominator: 1000n,
+            destination: owner,
+        }
 
         simpleNftCollection = blockchain.openContract(await SimpleNftCollection.fromInit(
             owner,
@@ -40,15 +47,10 @@ describe('SimpleNftCollection', () => {
             string_content,
             toNano("0.3"),
             0n,
-            {
-                $$type: "RoyaltyParams",
-                numerator: 100n, // 350n = 35%
-                denominator: 1000n,
-                destination: owner,
-            }
+            0n,
+            myRoyaltyParams
         ));
 
-        deployer = await blockchain.treasury('deployer');
 
         const deployResult = await simpleNftCollection.send(
             deployer.getSender(),
@@ -61,7 +63,21 @@ describe('SimpleNftCollection', () => {
             }
         );
 
-        
+        const send = await simpleNftCollection.send(
+            deployer.getSender(),
+            {
+                value: toNano('0.05'),
+            }, {
+                $$type:"CollectionSetupParams",
+                owner_address: owner, 
+                master_address: master, 
+                collection_content: content, 
+                royalty_params: myRoyaltyParams,
+                mint_limit: 0n,
+                price: toNano("0.3")
+            }
+        )
+
         const dataInfo = await simpleNftCollection.getGetCollectionData();
         let nftAddress = await simpleNftCollection.getGetNftAddressByIndex(0n);
 

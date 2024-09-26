@@ -24,6 +24,15 @@ struct RoyaltyParams {
     denominator: Int;
     destination: Address;
 }
+message CollectionSetupParams {
+    owner_address: Address;
+    master_address: Address;
+    collection_content: Cell; 
+    royalty_params: RoyaltyParams;
+    mint_limit: Int;
+    price: Int;
+}
+
 message(0x5fcc3d14) Transfer {
     query_id: Int as uint64;
     new_owner: Address;

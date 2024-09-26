@@ -5,16 +5,23 @@ import { NetworkProvider } from '@ton/blueprint';
 export async function run(provider: NetworkProvider) {
     const OFFCHAIN_CONTENT_PREFIX = 0x01;
     const string_first = "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/meta.json";
-    const string_content = "1/meta.json";
+    const string_content = "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/1/meta.json";
     const content = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeBuffer(Buffer.from(string_first)).endCell();
     const owner = Address.parse("EQBXOYPdhtLTaY3UJ8Cb69k7-nDFMPrR3S9lhWuk3uscesyQ");
-    const master = Address.parse("UQASOROUZS1xSjdKIZXzoR59-LRqs48Kc6ZXjTYNKAdQzrMu");
+    const master = Address.parse("EQBXOYPdhtLTaY3UJ8Cb69k7-nDFMPrR3S9lhWuk3uscesyQ"); //  Address.parse("UQASOROUZS1xSjdKIZXzoR59-LRqs48Kc6ZXjTYNKAdQzrMu");
+    const myRoyaltyParams = {
+        $$type: "RoyaltyParams" as "RoyaltyParams",
+        numerator: 100n, // 350n = 35%
+        denominator: 1000n,
+        destination: owner,
+    }
     const simpleNftCollection = provider.open(await SimpleNftCollection.fromInit(
         owner,
         master,
         content,
         string_content,
         toNano("1.1"),
+        0n,
         0n,
         {
             $$type: "RoyaltyParams",
@@ -23,6 +30,21 @@ export async function run(provider: NetworkProvider) {
             destination: owner,
         }
     ));
+
+    const send = await simpleNftCollection.send(
+        provider.sender(),
+        {
+            value: toNano('0.05'),
+        }, {
+            $$type:"CollectionSetupParams",
+            owner_address: owner, 
+            master_address: master, 
+            collection_content: content, 
+            royalty_params: myRoyaltyParams,
+            mint_limit: 0n,
+            price: toNano("0.3")
+        }
+    )
 
     await simpleNftCollection.send(
         provider.sender(),

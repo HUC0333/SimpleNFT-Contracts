@@ -7,6 +7,7 @@ const nftBalanceConst: Int = ton("0.1");
 contract SimpleNftCollection with Deployable {
 
     next_item_index: Int as uint32 = 0;
+    collection_index: Int as uint32 = 0;
     owner_address: Address;
     master_address: Address;
     royalty_params: RoyaltyParams?;                      
@@ -14,6 +15,7 @@ contract SimpleNftCollection with Deployable {
     individual_content_url: String;
     mint_limit: Int;
     price: Int;
+    is_setup: Bool;
 
     init(
     owner_address: Address, 
@@ -22,7 +24,9 @@ contract SimpleNftCollection with Deployable {
     nft_individual_content_url: String,
     mint_limit: Int,
     nft_price: Int,
+    collection_index: Int,
     royalty_params: RoyaltyParams){
+        require(sender() == master_address, "Not from master");
         self.owner_address = owner_address;
         self.master_address = master_address;
         self.collection_content = collection_content; 
@@ -30,9 +34,18 @@ contract SimpleNftCollection with Deployable {
         self.individual_content_url = nft_individual_content_url;
         self.mint_limit = mint_limit;
         self.price = nft_price;
+        self.collection_index = collection_index;
+        self.is_setup = false;
+    }
+
+    receive(msg: CollectionSetupParams) {
+        require(sender() == self.master_address, "Not from master");
+        require(self.is_setup == false, "Collection settings is already setup");
+        self.is_setup = true;
     }
 
     receive("Mint"){
+        require(self.is_setup == true, "Collection settings is not setup");
         let ctx: Context = context(); // get sender Info
         if (self.mint_limit > 0) {
             require(self.next_item_index <= self.mint_limit, "Mint limit reached");
@@ -57,8 +70,6 @@ contract SimpleNftCollection with Deployable {
         let b: StringBuilder = beginString();
         let itemData: String = (self.individual_content_url).asSlice().asString();
         b.append(itemData);
-        b.append("1");
-        b.append(".json");
 
         send(SendParameters{
                 to: contractAddress(nft_init), 
@@ -69,7 +80,7 @@ contract SimpleNftCollection with Deployable {
                     query_id: 0,
                     new_owner: sender,
                     response_destination: self.owner_address,
-                    custom_payload: self.collection_content,
+                    custom_payload: itemData.toCell(),
                     forward_amount: 0,
                     forward_payload: emptySlice()
                 }.toCell(),
