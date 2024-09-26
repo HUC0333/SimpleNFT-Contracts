@@ -34,6 +34,16 @@ message CollectionSetupParams {
     nft_price: Int;
 }
 
+message CollectionMintParams {
+    queryId: Int;
+    owner_address: Address;
+    collection_content: Cell; 
+    nft_individual_content_url: Cell;
+    royalty_params: RoyaltyParams;
+    mint_limit: Int;
+    nft_price: Int;
+}
+
 message(0x5fcc3d14) Transfer {
     query_id: Int as uint64;
     new_owner: Address;

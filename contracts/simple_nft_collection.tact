@@ -4,7 +4,7 @@ import "./nft_item.tact";
 
 const nftBalanceConst: Int = ton("0.1");
 
-contract SimpleNftCollection with Deployable {
+contract SimpleNftCollection {
 
     next_item_index: Int as uint32 = 0;
     collection_index: Int as uint32 = 0;
