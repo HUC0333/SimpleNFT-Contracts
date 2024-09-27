@@ -10,8 +10,9 @@ message Withdraw {
 }
 
 struct MasterData {
+    master: Address;
     next_collection_index: Int;
-     collection_creation_price: Int;
+    collection_creation_price: Int;
 }
 
 const masterMinStorage: Int = ton("0.3");
@@ -77,6 +78,7 @@ contract SimpleNftMaster with Deployable {
 
     get fun get_master_data (): MasterData {
         return MasterData{
+            master: self.owner,
             next_collection_index: self.next_collection_index,
             collection_creation_price: self.collection_creation_price
         }

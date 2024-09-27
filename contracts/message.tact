@@ -80,6 +80,7 @@ struct CollectionMasterData {
     master: Address;
     mint_limit: Int;
     price: Int;
+    index_in_collection: Int;
 }
 
 const minTonsForStorage: Int = ton("0.03");

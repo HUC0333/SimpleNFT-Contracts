@@ -112,7 +112,8 @@ contract SimpleNftCollection {
         return CollectionMasterData{
             master: self.master_address,
             mint_limit: self.mint_limit,
-            price: self.price
+            price: self.price,
+            index_in_collection: self.collection_index
         }
     }
 
