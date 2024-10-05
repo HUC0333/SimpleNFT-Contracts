@@ -25,7 +25,7 @@ contract SimpleNftMaster with Deployable {
 
     init(
         owner: Address,
-        creation_price: Int
+        creation_price: Int,
     ) {
         self.owner = owner;
         self.collection_creation_price = creation_price;
