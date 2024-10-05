@@ -50,7 +50,7 @@ describe('SimpleNftCollection', () => {
         const deployResult = await simpleNftCollection.send(
             deployer.getSender(),
             {
-                value: toNano('0.05'),
+                value: toNano('0.5'),
             },
             {
                 $$type: 'Deploy',

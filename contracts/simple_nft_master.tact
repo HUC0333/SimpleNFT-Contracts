@@ -25,7 +25,7 @@ contract SimpleNftMaster with Deployable {
 
     init(
         owner: Address,
-        creation_price: Int,
+        creation_price: Int
     ) {
         self.owner = owner;
         self.collection_creation_price = creation_price;
@@ -40,11 +40,11 @@ contract SimpleNftMaster with Deployable {
         send(SendParameters{
                 to: contractAddress(collection_init), 
                 value: masterMinStorage, 
-                bounce: false,
+                bounce: true,
                 mode: SendIgnoreErrors,
                 body: CollectionSetupParams {
                     owner_address: msg.owner_address,
-                    master_address: myAddress(),
+                    master_address: self.owner,
                     collection_content: msg.collection_content,
                     nft_individual_content_url: msg.nft_individual_content_url,
                     royalty_params: msg.royalty_params,

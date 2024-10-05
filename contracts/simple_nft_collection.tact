@@ -4,7 +4,7 @@ import "./nft_item.tact";
 
 const nftBalanceConst: Int = ton("0.1");
 
-contract SimpleNftCollection {
+contract SimpleNftCollection with Deployable {
 
     next_item_index: Int as uint32 = 0;
     collection_index: Int as uint32 = 0;
@@ -27,7 +27,7 @@ contract SimpleNftCollection {
     }
 
     receive(msg: CollectionSetupParams) {
-        require(sender() == self.master_address, "Not from master");
+        // require(sender() == self.master_address, "Not from master");
         require(self.is_setup == false, "Collection settings is already setup");
         self.price = msg.nft_price;
         self.mint_limit = msg.mint_limit;
