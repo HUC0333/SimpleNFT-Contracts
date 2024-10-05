@@ -7,7 +7,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
     const ui = provider.ui();
     const OFFCHAIN_CONTENT_PREFIX = 0x01;
     const master = Address.parse(args.length > 0 ? args[0] : await ui.input('SimpleNftMaster address'));
-    const string_first = "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/meta.json";
+    const string_first = "https://s.getgems.io/nft/c/66f505a169b52f28333a5306/edit/meta-1727422894131.json"; // "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/meta.json";
     const string_content = "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/1/meta.json";
     const content = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeBuffer(Buffer.from(string_first)).endCell();
     const nftContent = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeBuffer(Buffer.from(string_content)).endCell();
