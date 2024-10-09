@@ -27,7 +27,7 @@ contract SimpleNftCollection with Deployable {
     }
 
     receive(msg: CollectionSetupParams) {
-        // require(sender() == self.master_address, "Not from master");
+        require(sender() == self.master_address, "Not from master");
         require(self.is_setup == false, "Collection settings is already setup");
         self.price = msg.nft_price;
         self.mint_limit = msg.mint_limit;
