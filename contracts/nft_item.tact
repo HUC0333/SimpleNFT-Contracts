@@ -1,5 +1,6 @@
 import "@stdlib/deploy";
 import "./message.tact";
+
 contract NftItem {
     collection_address: Address;
     item_index: Int; 
