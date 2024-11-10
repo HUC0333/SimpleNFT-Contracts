@@ -7,11 +7,11 @@ export async function run(provider: NetworkProvider, args: string[]) {
     const ui = provider.ui();
     const OFFCHAIN_CONTENT_PREFIX = 0x01;
     const master = Address.parse(args.length > 0 ? args[0] : await ui.input('SimpleNftMaster address'));
-    const string_first = "https://s.getgems.io/nft/c/66f505a169b52f28333a5306/edit/meta-1727422894131.json"; // "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/meta.json";
-    const string_content = "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/1/meta.json";
+    const string_first = "https://gateway.pinata.cloud/ipfs/Qme31Cwu87EaGVPFbKRjsZ836DGyrfwocJFS49SUHgnJZM"; // "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/meta.json";
+    const string_content = "https://gateway.pinata.cloud/ipfs/QmRZfjvx9A1eZXUUE56Sr2iYrmXcr9jyMmvYWTzu9y63WZ";
     const content = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeBuffer(Buffer.from(string_first)).endCell();
     const nftContent = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeBuffer(Buffer.from(string_content)).endCell();
-    const owner = Address.parse("EQBXOYPdhtLTaY3UJ8Cb69k7-nDFMPrR3S9lhWuk3uscesyQ");
+    const owner = Address.parse("UQASOROUZS1xSjdKIZXzoR59-LRqs48Kc6ZXjTYNKAdQzrMu");
  //  Address.parse("UQASOROUZS1xSjdKIZXzoR59-LRqs48Kc6ZXjTYNKAdQzrMu");
     const myRoyaltyParams = {
         $$type: "RoyaltyParams" as "RoyaltyParams",
