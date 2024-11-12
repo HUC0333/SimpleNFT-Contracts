@@ -31,7 +31,7 @@ contract SimpleNftCollection with Deployable {
         require(self.is_setup == false, "Collection settings is already setup");
         self.price = msg.nft_price;
         self.mint_limit = msg.mint_limit;
-        self.owner_address = msg.owner_address;
+        self.owner_address = sender(); // msg.owner_address;
         self.royalty_params = msg.royalty_params;
         self.collection_content = msg.collection_content;
         self.individual_content_url = msg.nft_individual_content_url;
