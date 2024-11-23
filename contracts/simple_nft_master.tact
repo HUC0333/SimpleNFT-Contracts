@@ -15,7 +15,7 @@ struct MasterData {
     collection_creation_price: Int;
 }
 
-const masterMinStorage: Int = ton("0.3");
+const masterMinStorage: Int = ton("0.1");
 
 contract SimpleNftMaster with Deployable {
     
