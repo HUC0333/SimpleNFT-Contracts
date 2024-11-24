@@ -21,7 +21,7 @@ function hexToString(hex: string): string {
 export async function run(provider: NetworkProvider, args: string[]) {
     const ui = provider.ui();
 
-    const address = Address.parse(args.length > 0 ? args[0] : await ui.input('SimpleNftUsual address'));
+    const address = Address.parse(args.length > 0 ? args[0] : await ui.input('SimpleNft collection address'));
 
     if (!(await provider.isContractDeployed(address))) {
         ui.write(`Error: Contract at address ${address} is not deployed!`);

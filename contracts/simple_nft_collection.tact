@@ -145,6 +145,13 @@ contract SimpleNftCollection with Deployable {
         return b.toCell();
     }
 
+    get fun get_sample_nft_content (): Cell? {
+        let b: StringBuilder = beginString();
+        let ic: String = (self.individual_content_url!!).asSlice().asString();
+        b.append(ic);
+        return b.toCell();
+    }
+
     get fun royalty_params(): RoyaltyParams {
         return self.royalty_params!!;
     }
