@@ -1,1 +1,1 @@
-export * from '../build/SimpleNftCollection/tact_SimpleNftCollection';
+export * from '../build/SimpleNftMaster/tact_SimpleNftCollection';

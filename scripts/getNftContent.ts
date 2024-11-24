@@ -1,7 +1,7 @@
 import { Address, toNano } from '@ton/core';
-import { NftCollection } from '../wrappers/UsualNftCollection';
+import { SimpleNftCollection } from '../build/SimpleNftMaster/tact_SimpleNftCollection';
 import { NetworkProvider, sleep } from '@ton/blueprint';
-import { NftItem } from '../wrappers/UsualNftItem';
+import { NftItem } from '../wrappers/SimpleNftItem';
 
 function hexToString(hex: string): string {
     // Remove any '0x' prefix if it exists
@@ -28,9 +28,10 @@ export async function run(provider: NetworkProvider, args: string[]) {
         return;
     }
 
-    const simpleNftCollection = provider.open(NftCollection.fromAddress(address));
+    const simpleNftCollection = provider.open(SimpleNftCollection.fromAddress(address));
 
     const dataInfo = await simpleNftCollection.getGetCollectionData();
+    const sampleNft = await simpleNftCollection.getGetSampleNftContent();
     let nftAddress = await simpleNftCollection.getGetNftAddressByIndex(0n);
     console.log("Found address: ", nftAddress);
 
@@ -41,13 +42,13 @@ export async function run(provider: NetworkProvider, args: string[]) {
         },
         "Mint"
     ); */
-    
+    console.log("Decrypted collection: ", hexToString(String(dataInfo.collection_content)));
+    console.log("Decrypted sample: ", hexToString(String(sampleNft)));
     if (nftAddress) {
         const simpleNftITem = provider.open(NftItem.fromAddress(nftAddress));
         const nftData = await simpleNftITem.getGetNftData();
         console.log("Individual data: ", nftData);
         console.log("Decrypted nft: ", hexToString(String(nftData.individual_content)));
-        console.log("Decrypted collection: ", hexToString(String(dataInfo.collection_content)));
     } else {
         console.log("Where is address?");
     }
