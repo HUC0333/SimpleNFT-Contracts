@@ -44,7 +44,7 @@ contract SimpleNftMaster with Deployable {
                 mode: SendIgnoreErrors,
                 body: CollectionSetupParams {
                     owner_address: msg.owner_address,
-                    master_address: self.owner,
+                    master_address: myAddress(),
                     collection_content: msg.collection_content,
                     nft_individual_content_url: msg.nft_individual_content_url,
                     royalty_params: msg.royalty_params,
