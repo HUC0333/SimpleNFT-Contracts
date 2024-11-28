@@ -6,10 +6,10 @@ import { SimpleNftMaster } from '../wrappers/SimpleNftMaster';
 
 export async function run(provider: NetworkProvider, args: string[]) {
     const ui = provider.ui();
-    const owner = Address.parse("EQBXOYPdhtLTaY3UJ8Cb69k7-nDFMPrR3S9lhWuk3uscesyQ");
+    const owner = Address.parse("EQASOROUZS1xSjdKIZXzoR59-LRqs48Kc6ZXjTYNKAdQzu7r");
     const OFFCHAIN_CONTENT_PREFIX = 0x01;
-    const string_first = "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/meta.json";
-    const string_content = "https://s.getgems.io/nft/c/66eb584daac141e834f514c1/1/meta.json";
+    const string_first = "https://gateway.pinata.cloud/ipfs/Qmdoi3XJCzPT7TX6p9oFoAuKpjyqDTiQZpspVHU5wEjGU1";
+    const string_content = "https://gateway.pinata.cloud/ipfs/QmRZfjvx9A1eZXUUE56Sr2iYrmXcr9jyMmvYWTzu9y63WZ";
     const content = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeBuffer(Buffer.from(string_first)).endCell();
     const nftContent = beginCell().storeInt(OFFCHAIN_CONTENT_PREFIX, 8).storeBuffer(Buffer.from(string_content)).endCell();
     const address = Address.parse(args.length > 0 ? args[0] : await ui.input('SimpleNftMaster address'));
@@ -35,7 +35,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
     const firstCollectionCreate = await newMaster.send(
         provider.sender(),
         {
-            value: toNano('0.5'),
+            value: toNano('0.3'),
         },
         {
             $$type: "CollectionMintParams",
@@ -45,7 +45,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
             nft_individual_content_url: nftContent,
             royalty_params: myRoyaltyParams,
             mint_limit: 0n,
-            nft_price: toNano("1.1")
+            nft_price: toNano("0.5")
         }
     );
     if (!nextAddress) {
@@ -53,14 +53,17 @@ export async function run(provider: NetworkProvider, args: string[]) {
     }
     
     const simpleNftCollection = provider.open(SimpleNftCollection.fromAddress(nextAddress));
-
+    if (!(await provider.isContractDeployed(nextAddress))) {
+        ui.write(`Error: Collection is not deployed!`);
+        return;
+    }
     const dataInfo = await simpleNftCollection.getGetCollectionData();
     let nftAddress = await simpleNftCollection.getGetNftAddressByIndex(2n);
 
     await simpleNftCollection.send(
         provider.sender(),
         {
-            value: toNano('1.1'),
+            value: toNano('0.5'),
         },
         "Mint"
     );
