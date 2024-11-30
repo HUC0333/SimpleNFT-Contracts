@@ -8,7 +8,7 @@ export async function run(provider: NetworkProvider) {
     const owner = await ui.input('Owner address:');
     const simpleNftMaster = provider.open(await SimpleNftMaster.fromInit(
          Address.parse(owner),
-         toNano("0.3")
+         toNano("0.25")
     ));
     const myRoyaltyParams = {
         $$type: "RoyaltyParams" as "RoyaltyParams",
