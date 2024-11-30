@@ -15,7 +15,7 @@ struct MasterData {
     collection_creation_price: Int;
 }
 
-const masterMinStorage: Int = ton("0.1");
+const masterMinStorage: Int = ton("0.05");
 
 contract SimpleNftMaster with Deployable {
     
@@ -40,7 +40,7 @@ contract SimpleNftMaster with Deployable {
         send(SendParameters{
                 to: contractAddress(collection_init), 
                 value: masterMinStorage, 
-                bounce: true,
+                bounce: false,
                 mode: SendIgnoreErrors,
                 body: CollectionSetupParams {
                     owner_address: msg.owner_address,

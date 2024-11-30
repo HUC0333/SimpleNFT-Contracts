@@ -2,7 +2,7 @@ import "@stdlib/deploy";
 import "./message.tact";
 import "./nft_item.tact";
 
-const nftBalanceConst: Int = ton("0.1");
+const nftBalanceConst: Int = ton("0.05");
 
 contract SimpleNftCollection with Deployable {
 
