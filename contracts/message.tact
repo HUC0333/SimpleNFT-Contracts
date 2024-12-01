@@ -52,6 +52,7 @@ message(0x5fcc3d14) Transfer {
     forward_amount: Int as coins;
     forward_payload: Slice as remaining;
 }
+
 message(0x05138d91) OwnershipAssigned {
     query_id: Int as uint64;
     prev_owner: Address;

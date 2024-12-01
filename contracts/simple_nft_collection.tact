@@ -81,12 +81,16 @@ contract SimpleNftCollection with Deployable {
 
         send(SendParameters{
             to: self.master_address,
-            value: (feeValue * 3) / 100
+            value: (feeValue * 3) / 100,
+            bounce: false,
+            mode: SendIgnoreErrors
         });
 
         send(SendParameters{
             to: self.owner_address!!,
-            value: (feeValue * 97) / 100
+            value: (feeValue * 97) / 100,
+            bounce: false,
+            mode: SendIgnoreErrors
         }); 
         dump(self.next_item_index); // Reference at: https://tact-by-example.org/03-emit
         self.next_item_index = self.next_item_index + 1;
