@@ -2,7 +2,7 @@ import "@stdlib/deploy";
 import "./message.tact";
 import "./nft_item.tact";
 
-const nftBalanceConst: Int = ton("0.05");
+const nftBalanceConst: Int = ton("0.1");
 
 contract SimpleNftCollection with Deployable {
 
@@ -82,15 +82,13 @@ contract SimpleNftCollection with Deployable {
         send(SendParameters{
             to: self.master_address,
             value: (feeValue * 3) / 100,
-            bounce: false,
-            mode: SendIgnoreErrors
+            bounce: false
         });
 
         send(SendParameters{
             to: self.owner_address!!,
             value: (feeValue * 97) / 100,
-            bounce: false,
-            mode: SendIgnoreErrors
+            bounce: false
         }); 
         dump(self.next_item_index); // Reference at: https://tact-by-example.org/03-emit
         self.next_item_index = self.next_item_index + 1;
